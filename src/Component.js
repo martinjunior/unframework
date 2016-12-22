@@ -1,5 +1,3 @@
-'use strict';
-
 import merge from './utilities/merge';
 import findRefs from './utilities/findRefs';
 import parseAttributeProps from './utilities/parseAttributeProps';

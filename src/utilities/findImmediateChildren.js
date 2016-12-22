@@ -1,5 +1,3 @@
-'use strict';
-
 export default function findImmediateChildren(el, selector) {
   const immediateChildren = [];
   const children = [...el.querySelectorAll(selector)];

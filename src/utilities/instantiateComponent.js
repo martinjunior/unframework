@@ -1,5 +1,3 @@
-'use strict';
-
 import { findByName } from './../componentRegistry';
 import findImmediateChildren from './findImmediateChildren';
 

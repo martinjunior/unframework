@@ -1,5 +1,3 @@
-'use strict';
-
 const memo = {};
 
 export default function parseAttributeProps(body, ...args) {

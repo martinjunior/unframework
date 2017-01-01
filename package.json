@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "watchify src/index.js -s unframework -o index.js -t [ babelify ]",
-    "build": "browserify src/index.js -s unframework -o index.js -t [ babelify ]",
+    "dev": "watchify src/index.js -s unframework -t [ babelify ] -o 'derequire > index.js'",
+    "build": "browserify src/index.js -s unframework -t [ babelify ] | derequire > index.js",
     "test": "test"
   },
   "author": "Martin Duran",

@@ -1,14 +1,9 @@
 import Component from './Component';
-import IfComponent from './components/IfComponent';
-import { register } from './componentRegistry';
-import instantiateComponent from './utilities/instantiateComponent';
-
-const mount = (element, parent) => instantiateComponent(element, parent);
-
-register({ IfComponent });
+import registry from './registry';
+import mount from './mount';
 
 export default {
   Component,
   mount,
-  register,
+  register: registry.register,
 };

@@ -1,83 +1,72 @@
-import merge from './utilities/merge';
-import findRefs from './utilities/findRefs';
-import parseAttributeProps from './utilities/parseAttributeProps';
+import createParser from './createParser';
+import { findRefs, findImmediateChildren } from './utils';
+import tree from './tree';
 
 export default class Component {
-  constructor(element, parent) {
-    this.element = element;
-    this.parent = parent;
-    this.children = [];
+  constructor(el, parent = null) {
+    this.el = el;
     this.state = {};
     this.refs = {};
-    this._attrProps = element.dataset.props;
-    this.props = merge(
-      this.constructor.defaultProps,
-      parseAttributeProps(
-        this.element.dataset.componentId,
-        this._attrProps,
-        this.parent
-      )
+    this.parent = parent;
+    this.children = [];
+    this._isMounted = false;
+    this.props = Object.assign({}, this.constructor.defaultProps);
+    this.parse = createParser(
+      `return ${this.el.dataset.props}`,
+      'parent, loop'.concat(tree.branchNamesToArgList(this))
     );
   }
 
-  componentWillMount() {}
-
-  componentDidMount() {}
-
-  componentWillReceiveProps(nextProps) {}
-
-  shouldComponentUpdate() { return true; }
-
-  componentWillUpdate() {}
-
-  componentDidUpdate() {}
-
-  componentWillUnmount() {}
-
-  render(props, state) {}
-
-  setState(newState) {
-    this.state = merge(this.state, newState);
-    this._update();
-  }
-
-  _init(children) {
-    this.refs = findRefs(this.element, this.children);
-    this.componentWillMount();
-    const nextProps = merge(
-      this.props,
-      parseAttributeProps(
-        this.element.dataset.componentId,
-        this._attrProps,
-        this.parent
-      )
+  acceptState(nextState) {
+    this.state = Object.assign({}, this.state, nextState);
+    const nextProps = Object.assign({}, this.props,
+      this.parse(this.parent, this.loop, ...tree.branchesToArgs(this))
     );
-    this.props = nextProps;
-    this.render(nextProps, this.state);
-    this.componentDidMount();
-  }
 
-  _update() {
-    const nextProps = merge(
-      this.props,
-      parseAttributeProps(
-        this.element.dataset.componentId,
-        this._attrProps,
-        this.parent
-      )
-    );
-    this.componentWillReceiveProps(nextProps);
-    this.props = nextProps;
-
-    if (this.shouldComponentUpdate() === false) {
-      return;
+    if (this._isMounted === false) {
+      this.props = nextProps;
+      this.componentWillMount();
+      this.refs = findRefs(this.el, this.children);
+      this.render(this.props, this.state);
+      this._isMounted = true;
+      this.componentDidMount();
+    } else {
+      this.componentWillReceiveProps(nextProps);
+      this.props = nextProps;
+      if (this.shouldComponentUpdate() === false) {
+        return;
+      }
+      this.componentWillUpdate();
+      this.render(this.props, this.state);
+      this.componentDidUpdate();
     }
 
-    this.componentWillUpdate();
-    this.render(this.props, this.state);
-    this.componentDidUpdate();
-    this.children.forEach(child => child._update());
+    this.children.forEach(child => child.acceptState());
   }
-}
 
-Component.defaultProps = {};
+  setState(nextState) {
+    this.acceptState(nextState);
+  }
+
+  unmount() {
+    this._isMounted = false;
+    this.componentWillUnmount();
+    this.children.forEach(child => child.unmount());
+  }
+
+  destroy() {
+    this.children.forEach(child => child.destroy());
+  }
+
+  shouldMountChildren() { return true; }
+  componentWillMount() {}
+  componentDidMount() {}
+  componentWillReceiveProps() {}
+  shouldComponentUpdate() { return true; }
+  componentWillUpdate() {}
+  componentDidUpdate() {}
+  componentWillUnmount() {}
+  render() {}
+
+  static defaultProps = {}
+}

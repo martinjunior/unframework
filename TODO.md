@@ -1,0 +1,5 @@
+- Write a README
+- Ensure `destroy`/`unmount` methods are in order
+- Unit test
+- Document the code; maybe organize it
+- Error handling

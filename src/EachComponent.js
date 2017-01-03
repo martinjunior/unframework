@@ -20,9 +20,7 @@ export default class EachComponent extends Component {
     );
   }
 
-  shouldMountChildren() {
-    return this._isMounted;
-  }
+  shouldMountChildren() { return this._isMounted; }
 
   acceptState(nextState) {
     const items = EachComponent.each(this.parse(this.parent, ...tree.branchesToArgs(this)));

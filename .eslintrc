@@ -14,7 +14,12 @@
     "module": true,
     "require": true,
     "define": true,
-    "process": true
+    "process": true,
+    "it": true,
+    "describe": true,
+    "before": true,
+    "beforeEach": true,
+    "global": true,
   },
   "parser": "babel-eslint",
   "rules": {

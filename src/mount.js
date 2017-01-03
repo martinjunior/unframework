@@ -24,48 +24,41 @@ export function mountChildren(el, parent, cb = x => x) {
     return;
   }
 
-  elements.forEach(element => processElement(element, parent, child => {
-    parent.children.push(cb(child));
-  }));
+  elements.forEach(element => {
+    const component = processElement(element, parent);
+    if (!component) { return; }
+    parent.children.push(cb(component));
+  });
 
   parent.children.forEach(child => {
     mountChildren(child.el, child, cb);
   });
 }
 
-function processElement(el, parent, cb) {
+export function processElement(el, parent) {
   const component = processComponentAttribute(el.dataset.component);
   const Constructor = registry.find(component.constructorName);
   const ifExpr = el.dataset.if;
   const eachExpr = el.dataset.each;
   const outExpr = el.dataset.out;
 
-  if (ifExpr) {
-    cb(new IfComponent(el, parent));
-    return;
-  }
-  if (eachExpr) {
-    cb(new EachComponent(el, parent));
-    return;
-  }
-  if (outExpr) {
-    cb(new OutComponent(el, parent));
-    return;
-  }
+  if (ifExpr) { return new IfComponent(el, parent); }
+  if (eachExpr) { return new EachComponent(el, parent); }
+  if (outExpr) { return new OutComponent(el, parent); }
   if (Constructor) {
     const instance = new Constructor(el, parent);
-    cb(Object.assign(instance, {
+    return Object.assign(instance, {
       name: component.instanceName,
-    }));
-    return;
+    });
   }
 }
 
-function processComponentAttribute(name = '') {
-  const matches = (name.match(/([A-Za-z]+) as ([A-Za-z]+)/) || []);
+export function processComponentAttribute(name = '') {
+  const trimmedName = name.trim();
+  const matches = (trimmedName.match(/([A-Za-z]+)[ ]+as[ ]+([A-Za-z]+)/) || []);
 
   return {
-    constructorName: matches[1] || name,
-    instanceName: matches[2],
+    constructorName: matches[1] || trimmedName,
+    instanceName: matches[2] || null,
   };
 }
